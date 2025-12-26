@@ -1,0 +1,218 @@
+<!-- Author ===> Jitesh Borse -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Language Translation Tool (Offline)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 10px;
+            margin-top: 5px;
+            box-sizing: border-box;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            resize: vertical;
+        }
+
+        select,
+        button {
+            padding: 8px 10px;
+            margin-top: 10px;
+            margin-right: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+
+        #output {
+            background: #f9f9f9;
+        }
+
+        .buttons {
+            margin-top: 10px;
+        }
+
+        .status {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Language Translation Tool (Offline Demo)</h1>
+
+    <label for="sourceText">Enter text:</label>
+    <textarea id="sourceText"
+        placeholder="Type short sentences like: 'hello', 'good morning', 'thank you'..."></textarea>
+
+    <label>Languages:</label>
+    <select id="sourceLang">
+        <option value="en">English</option>
+        <option value="hi">Hindi</option>
+        <option value="es">Spanish</option>
+    </select>
+
+    <select id="targetLang">
+        <option value="hi">Hindi</option>
+        <option value="en">English</option>
+        <option value="es">Spanish</option>
+    </select>
+
+    <div class="buttons">
+        <button id="translateBtn">Translate</button>
+        <button id="swapBtn">Swap Languages</button>
+    </div>
+
+    <label for="output">Translated text:</label>
+    <textarea id="output" readonly></textarea>
+
+    <div class="buttons">
+        <button id="copyBtn">Copy Translated Text</button>
+        <button id="speakBtn">Text to Speech</button>
+    </div>
+
+    <div class="status" id="status">
+        This is an offline demo using a built-in dictionary for common phrases.
+    </div>
+
+    <script>
+        const translateBtn = document.getElementById("translateBtn");
+        const swapBtn = document.getElementById("swapBtn");
+        const copyBtn = document.getElementById("copyBtn");
+        const speakBtn = document.getElementById("speakBtn");
+        const sourceText = document.getElementById("sourceText");
+        const output = document.getElementById("output");
+        const sourceLang = document.getElementById("sourceLang");
+        const targetLang = document.getElementById("targetLang");
+        const statusEl = document.getElementById("status");
+
+        const dictionary = {
+            "en|hi|hello": "नमस्ते",
+            "en|hi|hi": "नमस्ते",
+            "en|hi|good morning": "सुप्रभात",
+            "en|hi|good night": "शुभ रात्रि",
+            "en|hi|thank you": "धन्यवाद",
+            "en|hi|how are you": "आप कैसे हैं?",
+            "en|hi|welcome": "स्वागत है",
+
+            "hi|en|नमस्ते": "hello",
+            "hi|en|सुप्रभात": "good morning",
+            "hi|en|शुभ रात्रि": "good night",
+            "hi|en|धन्यवाद": "thank you",
+            "hi|en|आप कैसे हैं": "how are you",
+            "hi|en|आप कैसे हैं?": "how are you?",
+            "hi|en|स्वागत है": "welcome",
+
+            "en|es|hello": "hola",
+            "en|es|hi": "hola",
+            "en|es|good morning": "buenos días",
+            "en|es|good night": "buenas noches",
+            "en|es|thank you": "gracias",
+            "en|es|how are you": "¿cómo estás?",
+            "en|es|welcome": "bienvenido",
+
+            "es|en|hola": "hello",
+            "es|en|buenos días": "good morning",
+            "es|en|buenas noches": "good night",
+            "es|en|gracias": "thank you",
+            "es|en|¿cómo estás?": "how are you?",
+            "es|en|como estas": "how are you?",
+            "es|en|bienvenido": "welcome"
+        };
+
+        function doTranslation() {
+            const text = sourceText.value.trim();
+            if (!text) {
+                alert("Please enter some text to translate.");
+                return;
+            }
+
+            const src = sourceLang.value;
+            const tgt = targetLang.value;
+
+            if (src === tgt) {
+                output.value = text;
+                statusEl.textContent = "Source and target languages are the same.";
+                return;
+            }
+
+            const key = `${src}|${tgt}|${text.toLowerCase()}`;
+            const translation = dictionary[key];
+
+            if (translation) {
+                output.value = translation;
+                statusEl.textContent = "Translation found (offline dictionary).";
+            } else {
+                output.value = "[No offline translation found for this sentence.]";
+                statusEl.textContent =
+                    "No exact match in dictionary. Try simple phrases like 'hello', 'thank you', 'good morning'.";
+            }
+        }
+
+        function swapLanguages() {
+            const temp = sourceLang.value;
+            sourceLang.value = targetLang.value;
+            targetLang.value = temp;
+
+            const tempText = sourceText.value;
+            sourceText.value = output.value;
+            output.value = tempText;
+        }
+
+        function copyTranslated() {
+            if (!output.value.trim()) {
+                alert("No translated text to copy.");
+                return;
+            }
+            output.select();
+            document.execCommand("copy");
+            statusEl.textContent = "Translated text copied to clipboard.";
+        }
+
+        function speakText() {
+            const text = output.value.trim();
+            if (!text) {
+                alert("No translated text to speak.");
+                return;
+            }
+            if (!("speechSynthesis" in window)) {
+                alert("Text-to-speech is not supported in this browser.");
+                return;
+            }
+            const utterance = new SpeechSynthesisUtterance(text);
+            window.speechSynthesis.speak(utterance);
+        }
+
+        translateBtn.addEventListener("click", doTranslation);
+        swapBtn.addEventListener("click", swapLanguages);
+        copyBtn.addEventListener("click", copyTranslated);
+        speakBtn.addEventListener("click", speakText);
+    </script>
+</body>
+
+</html>
